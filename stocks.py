@@ -43,7 +43,16 @@ if num_rows <= 41:
 df = pd.DataFrame(worksheet.get('A2:Z41'), columns=worksheet.row_values(1))
 
 # Original Data
-data = df.copy().clean_names()
+data = df.copy()
+
+# Clean Names
+data.columns = (
+    data.columns
+    .str.strip()
+    .str.lower()
+    .str.replace(" ", "_")
+    .str.replace(r"[^0-9a-zA-Z_]", "", regex=True)
+)
 
 # Standardize Column Names
 data.columns = data.columns.str.lower().str.replace(' ', '_').str.replace(r'[()]', '', regex=True)
