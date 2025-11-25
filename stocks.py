@@ -3,7 +3,6 @@ import os
 import sys
 import json
 import time
-import janitor
 
 import pandas as pd
 import gspread
