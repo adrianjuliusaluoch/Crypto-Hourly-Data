@@ -11,7 +11,7 @@ from google.cloud import bigquery
 from google.oauth2.service_account import Credentials
 
 # Initialize BigQuery client
-client = bigquery.Client(project='crypto-stocks-01')
+client = bigquery.Client()
 
 API_URL = "https://api.coingecko.com/api/v3/coins/markets"
 PARAMS = {
@@ -74,14 +74,43 @@ if __name__ == "__main__":
 data['price_usd'] = data['price_usd'].astype(str)
 
 # Define Table ID
-table_id = 'crypto-stocks-01.storage.top_cryptocurrency'
+table_id = f"data-storage-485106.investing.crypto_{table_suffix}"
 
-# Export Data to BigQuery
-job = client.load_table_from_dataframe(data, table_id)
-while job.state != 'DONE':
-    time.sleep(2)
-    job.reload()
-    print(job.state)
+if now.day == 1:
+    try:
+        prev_month_date = now.replace(day=1) - timedelta(days=1)
+        prev_table_suffix = f"{prev_month_date.year}_{prev_month_date.strftime('%b').lower()}"
+        prev_table_id = f"data-storage-485106.investing.crypto_{prev_table_suffix}"
+        
+        try:
+            prev_data = client.query(
+                f"SELECT * FROM `{prev_table_id}` ORDER BY country_code"
+            ).to_dataframe()
+            bigdata = pd.concat([prev_data, bigdata], ignore_index=True)
+            print(f"Appended {len(prev_data)} rows from previous month table.")
+        except NotFound:
+            print("No previous month table found, skipping append.")
+        
+        job = client.load_table_from_dataframe(
+            bigdata,
+            table_id,
+            job_config=bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
+        )
+        job.result()
+        print(f"All data loaded into {table_id}, total rows: {len(bigdata)}")
+
+    except Exception as e:
+        print(f"Error during 1st-of-month load: {e}")
+
+else:
+    # 🔥 NORMAL WORKFLOW (this was missing)
+    job = client.load_table_from_dataframe(
+        bigdata,
+        table_id,
+        job_config=bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
+    )
+    job.result()
+    print(f"Normal load completed into {table_id}, rows: {len(bigdata)}")
 
 # Define SQL Query to Retrieve Open Weather Data from Google Cloud BigQuery
 sql = (
@@ -170,6 +199,7 @@ print(f"Data {data.shape} has been successfully retrieved, saved, and appended t
 
 # Exit 
 print(f'Cryptocurrency Data Export to Google BigQuery Successful')
+
 
 
 
