@@ -84,7 +84,7 @@ if now.day == 1:
         
         try:
             prev_data = client.query(
-                f"SELECT * FROM `{prev_table_id}` ORDER BY country_code"
+                f"SELECT * FROM `{prev_table_id}`"
             ).to_dataframe()
             bigdata = pd.concat([prev_data, bigdata], ignore_index=True)
             print(f"Appended {len(prev_data)} rows from previous month table.")
@@ -113,10 +113,10 @@ else:
     print(f"Normal load completed into {table_id}, rows: {len(bigdata)}")
 
 # Define SQL Query to Retrieve Open Weather Data from Google Cloud BigQuery
-sql = (
-    'SELECT *'
-    'FROM `crypto-stocks-01.storage.top_cryptocurrency`'
-           )
+sql = (f"""
+        SELECT *
+        FROM `{table_id}`
+       """)
     
 # Run SQL Query
 data = client.query(sql).to_dataframe()
@@ -153,8 +153,8 @@ data.drop_duplicates(subset=[
     'market_cap'], inplace=True)
 
 # Define the dataset ID and table ID
-dataset_id = 'storage'
-table_id = 'top_cryptocurrency'
+dataset_id = 'investing'
+table_id = f"crypto_{table_suffix}"
     
 # Define the table schema for new table
 schema = [
@@ -183,7 +183,7 @@ except Exception as e:
     print(f"Table {table.table_id} failed")
 
 # Define the BigQuery table ID
-table_id = 'crypto-stocks-01.storage.top_cryptocurrency'
+table_id = f"data-storage-485106.investing.crypto_{table_suffix}"
 
 # Load the data into the BigQuery table
 job = client.load_table_from_dataframe(data, table_id)
@@ -199,27 +199,3 @@ print(f"Data {data.shape} has been successfully retrieved, saved, and appended t
 
 # Exit 
 print(f'Cryptocurrency Data Export to Google BigQuery Successful')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
