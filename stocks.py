@@ -51,10 +51,10 @@ if num_rows <= 41:
 df = pd.DataFrame(worksheet.get('A2:Z41'), columns=worksheet.row_values(1))
 
 # Original Data
-data = df.copy()
+bigdata = df.copy()
 
 # Rename Variables
-data.columns = [
+bigdata.columns = [
     "timestamp",
     "name",
     "last",
@@ -67,7 +67,7 @@ data.columns = [
 ]
 
 # Standardize Column Names
-data.columns = data.columns.str.lower().str.replace(' ', '_').str.replace(r'[()]', '', regex=True)
+bigdata.columns = bigdata.columns.str.lower().str.replace(' ', '_').str.replace(r'[()]', '', regex=True)
 
 # Define Table ID
 table_id = f"data-storage-485106.investing.stocks_{table_suffix}"
