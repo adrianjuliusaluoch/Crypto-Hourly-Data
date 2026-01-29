@@ -1,4 +1,4 @@
-name: Export Google Sheets to Google BigQuery
+name: Request Crypto Data From CoinGecko
 
 on:
   schedule:
